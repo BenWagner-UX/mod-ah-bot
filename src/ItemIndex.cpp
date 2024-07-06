@@ -27,24 +27,6 @@
 #include "ObjectMgr.h"
 #include "SmartEnum.h"
 
-void AuctionHouseIndex::Initialize()
-{
-    // Load price overrides
-    itemPriceOverride.clear(); // in case of reload
-    {
-        QueryResult results = WorldDatabase.Query("SELECT item, avgPrice, minPrice FROM mod_auctionhousebot_priceOverride");
-
-        if (results)
-        {
-            do
-            {
-                const Field* fields = results->Fetch();
-                itemPriceOverride.emplace(fields[0].Get<uint32>(), std::pair{ fields[1].Get<uint32>() , fields[2].Get<uint32>() });
-            } while (results->NextRow());
-        }
-    }
-}
-
 struct ItemFilter
 {
     bool SellMethod{ false };
@@ -90,6 +72,7 @@ struct ItemFilter
     uint32 DisableItemsAboveReqSkillRank{ 0 };
     uint32 DisableTGsBelowReqSkillRank{ 0 };
     uint32 DisableTGsAboveReqSkillRank{ 0 };
+    uint32 DisablePriceOverride{ 0 };
 
     std::unordered_set<uint32> disabledItems{};
     std::unordered_set<uint32> npcItems{};
@@ -204,6 +187,8 @@ struct ItemFilter
         DisableItemsAboveReqSkillRank = sConfigMgr->GetOption<uint32>("AuctionHouseBot.DisableItemsAboveReqSkillRank", 0);
         DisableTGsBelowReqSkillRank = sConfigMgr->GetOption<uint32>("AuctionHouseBot.DisableTGsBelowReqSkillRank", 0);
         DisableTGsAboveReqSkillRank = sConfigMgr->GetOption<uint32>("AuctionHouseBot.DisableTGsAboveReqSkillRank", 0);
+
+        DisablePriceOverride = sConfigMgr->GetOption<uint32>("AuctionHouseBot.DisablePriceOverride", 0);
     }
 
     bool IsAccepted(const ItemTemplate& itemTemplate) const
@@ -531,6 +516,31 @@ struct ItemFilter
         return true;
     }
 };
+
+
+
+void AuctionHouseIndex::Initialize()
+{
+    // Load price overrides
+    itemPriceOverride.clear(); // in case of reload
+    {
+        const ItemFilter filter;
+
+        if (filter.DisablePriceOverride == 0)
+        {
+            QueryResult results = WorldDatabase.Query("SELECT item, avgPrice, minPrice FROM mod_auctionhousebot_priceOverride");
+
+            if (results)
+            {
+                do
+                {
+                    const Field* fields = results->Fetch();
+                    itemPriceOverride.emplace(fields[0].Get<uint32>(), std::pair{ fields[1].Get<uint32>() , fields[2].Get<uint32>() });
+                } while (results->NextRow());
+            }
+        }
+    }
+}
 
 
 
