@@ -31,12 +31,13 @@ class ah_bot_commandscript : public CommandScript
 public:
     ah_bot_commandscript() : CommandScript("ah_bot_commandscript") { }
 
-    std::vector<ChatCommand> GetCommands() const override
+    ChatCommandTable GetCommands() const override
     {
-        static std::vector<ChatCommand> commandTable =
+        static ChatCommandTable commandTable =
         {
-            { "ahbotoptions",   SEC_GAMEMASTER,     true,   &HandleAHBotOptionsCommand,     "" },
+            { "ahbotoptions",   HandleAHBotOptionsCommand,  SEC_GAMEMASTER,   Console::Yes}
         };
+
         return commandTable;
     }
 

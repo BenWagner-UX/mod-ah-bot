@@ -537,7 +537,13 @@ void AuctionHouseIndex::Initialize()
                     const Field* fields = results->Fetch();
                     itemPriceOverride.emplace(fields[0].Get<uint32>(), std::pair{ fields[1].Get<uint32>() , fields[2].Get<uint32>() });
                 } while (results->NextRow());
+
+                LOG_INFO("module.ahbot", "AH BOT: ItemPrice Overrides loaded: {} ", itemPriceOverride.size());
             }
+        }
+        else
+        {
+            LOG_INFO("module.ahbot", "AH BOT: ItemPrice Overrides DISABLED");
         }
     }
 }
